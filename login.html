@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LAWSA Portal — Administrative Login</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --navy-dark: #0A1428;
+      --navy-medium: #112240;
+      --gold: #C39F33;
+      --gold-hover: #D4B045;
+      --text-white: #F4F6F9;
+      --text-muted: #8892B0;
+      --danger: #FF4D4D;
+      --success: #2ECC71;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Archivo', 'Inter', sans-serif; }
+
+    body {
+      background: var(--navy-dark);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 30%, rgba(195, 159, 51, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .login-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 420px;
+      background: var(--navy-medium);
+      border: 1px solid rgba(195, 159, 51, 0.15);
+      border-radius: 16px;
+      padding: 40px 36px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    .login-header img {
+      height: 70px;
+      margin-bottom: 16px;
+    }
+
+    .login-header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--gold);
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .login-header p {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      background: rgba(10, 20, 40, 0.6);
+      border: 1px solid rgba(195, 159, 51, 0.25);
+      border-radius: 8px;
+      padding: 14px 16px;
+      color: var(--text-white);
+      font-size: 0.95rem;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--gold);
+      box-shadow: 0 0 0 3px rgba(195, 159, 51, 0.15);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-primary {
+      background: var(--gold);
+      color: #0A1428;
+    }
+
+    .btn-primary:hover {
+      background: var(--gold-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(195, 159, 51, 0.25);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .alert-error {
+      background: rgba(255, 77, 77, 0.15);
+      border: 1px solid var(--danger);
+      color: #FF8080;
+    }
+
+    .alert-success {
+      background: rgba(46, 204, 113, 0.15);
+      border: 1px solid var(--success);
+      color: #2ECC71;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-top-color: currentColor;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer-note {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .forgot-link {
+      display: block;
+      text-align: right;
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 0.8rem;
+      cursor: pointer;
+      text-decoration: none;
+      margin-top: 8px;
+      width: 100%;
+      text-align: right;
+    }
+
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      background: none;
+      border: none;
+      color: var(--gold);
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    #resetSection {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <img src="./public/assets/images/logo.png" alt="LAWSA UNIBEN Logo">
+      <h1>LAWSA Admin</h1>
+      <p>Management Portal</p>
+    </div>
+
+    <div id="errorAlert" class="alert alert-error"></div>
+    <div id="successAlert" class="alert alert-success"></div>
+
+    <!-- Main login form -->
+    <form id="loginForm">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="email" class="form-input" placeholder="you@example.com" required>
+      </div>
+      <div class="form-group" id="passwordGroup">
+        <label class="form-label">Password</label>
+        <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+      </div>
+      <button type="submit" class="btn btn-primary" id="loginBtn">
+        <span class="spinner" id="loginSpinner"></span>
+        <span id="loginText">Sign In</span>
+      </button>
+      <button type="button" id="forgotPassword" class="forgot-link">Forgot Password?</button>
+    </form>
+
+    <!-- Reset password section (hidden by default) -->
+    <div id="resetSection">
+      <div class="form-group">
+        <label class="form-label">Email for reset link</label>
+        <input type="email" id="resetEmail" class="form-input" placeholder="Enter your email">
+      </div>
+      <button id="resetBtn" class="btn btn-primary">
+        <span class="spinner" id="resetSpinner"></span>
+        <span id="resetText">Send Reset Link</span>
+      </button>
+      <button id="backToLogin" class="back-link">← Back to Login</button>
+    </div>
+
+    <div class="footer-note">
+      © 2025/2026 LAWSA UNIBEN — Administrative Access Only
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Ensure Supabase is ready
+      if (!window.supabase || !window.supabase.createClient) {
+        document.getElementById('errorAlert').textContent = 'Failed to load Supabase library. Check your internet connection.';
+        document.getElementById('errorAlert').style.display = 'block';
+        return;
+      }
+
+      const supabase = window.supabase.createClient(
+        'https://zexamxpnccxsrxlcgosh.supabase.co',
+        'sb_publishable_6GeUzm1SYyFgvaWBOJGKeA_MmZMtSJl'
+      );
+
+      const errorAlert = document.getElementById('errorAlert');
+      const successAlert = document.getElementById('successAlert');
+      const loginForm = document.getElementById('loginForm');
+      const resetSection = document.getElementById('resetSection');
+      const forgotBtn = document.getElementById('forgotPassword');
+      const backBtn = document.getElementById('backToLogin');
+      const resetBtn = document.getElementById('resetBtn');
+      const loginEmail = document.getElementById('email');
+      const loginPassword = document.getElementById('password');
+      const resetEmailInput = document.getElementById('resetEmail');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginSpinner = document.getElementById('loginSpinner');
+      const loginText = document.getElementById('loginText');
+      const resetSpinner = document.getElementById('resetSpinner');
+      const resetText = document.getElementById('resetText');
+
+      function showError(msg) {
+        errorAlert.textContent = msg;
+        errorAlert.style.display = 'block';
+        successAlert.style.display = 'none';
+      }
+
+      function showSuccess(msg) {
+        successAlert.textContent = msg;
+        successAlert.style.display = 'block';
+        errorAlert.style.display = 'none';
+      }
+
+      function clearAlerts() {
+        errorAlert.style.display = 'none';
+        successAlert.style.display = 'none';
+      }
+
+      function setLoading(btn, spinner, textEl, isLoading, loadingText, originalText) {
+        btn.disabled = isLoading;
+        spinner.style.display = isLoading ? 'inline-block' : 'none';
+        textEl.textContent = isLoading ? loadingText : originalText;
+      }
+
+      // Toggle to reset section
+      forgotBtn.addEventListener('click', function() {
+        clearAlerts();
+        loginForm.style.display = 'none';
+        resetSection.style.display = 'block';
+        // Pre-fill with login email if provided
+        if (loginEmail.value.trim()) {
+          resetEmailInput.value = loginEmail.value.trim();
+        }
+      });
+
+      // Back to login
+      backBtn.addEventListener('click', function() {
+        clearAlerts();
+        resetSection.style.display = 'none';
+        loginForm.style.display = 'block';
+      });
+
+      // Sign in
+      loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = loginEmail.value.trim();
+        const password = loginPassword.value;
+        if (!email || !password) {
+          showError('Please fill in both email and password.');
+          return;
+        }
+        setLoading(loginBtn, loginSpinner, loginText, true, 'Signing in…', 'Sign In');
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) {
+          showError(error.message);
+          setLoading(loginBtn, loginSpinner, loginText, false);
+        } else {
+          window.location.href = 'admin.html';
+        }
+      });
+
+      // Send reset link
+      resetBtn.addEventListener('click', async function() {
+        const email = resetEmailInput.value.trim();
+        if (!email) {
+          showError('Please enter your email address.');
+          return;
+        }
+        setLoading(resetBtn, resetSpinner, resetText, true, 'Sending…', 'Send Reset Link');
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin + '/reset-password.html',
+        });
+        if (error) {
+          showError(error.message);
+          console.error('Reset error:', error);
+        } else {
+          showSuccess('Reset link sent! Check your inbox.');
+        }
+        setLoading(resetBtn, resetSpinner, resetText, false);
+      });
+    });
+  </script>
+</body>
+</html>

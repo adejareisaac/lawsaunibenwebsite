@@ -1,0 +1,7 @@
+[build]
+  command = "echo 'Building...'"
+  functions = "netlify/functions"
+
+[[scheduled]]
+  cron = "0 0 */3 * *"
+  function = "ping-supabase"
