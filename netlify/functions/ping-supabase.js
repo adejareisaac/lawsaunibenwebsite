@@ -1,7 +1,6 @@
-// Ping function to keep Supabase project active
-// Runs every 3 days via Netlify scheduled trigger
+// netlify/functions/ping-supabase.js
 
-exports.handler = async (event) => {
+exports.handler = async () => {
   try {
     const SUPABASE_URL = process.env.SUPABASE_URL;
     const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
@@ -10,50 +9,37 @@ exports.handler = async (event) => {
       return {
         statusCode: 500,
         body: JSON.stringify({
-          error: 'Missing Supabase environment variables',
-        }),
+          error: "Missing environment variables"
+        })
       };
     }
 
-    // Query any table (using information_schema as a safe fallback)
-    // If you have a specific table, replace the query
+    // Ping a REAL table that exists
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/information_schema.tables?limit=1`,
+      `${SUPABASE_URL}/rest/v1/news_posts?select=id&limit=1`,
       {
-        method: 'GET',
         headers: {
-          'apikey': SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        },
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+        }
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`Supabase API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-
-    console.log('Supabase ping successful', {
-      timestamp: new Date().toISOString(),
-      status: response.status,
-    });
+    const result = await response.text();
 
     return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'Supabase database pinged successfully',
-        timestamp: new Date().toISOString(),
-      }),
+      statusCode: response.status,
+      body: result
     };
-  } catch (error) {
-    console.error('Supabase ping failed:', error.message);
+
+  } catch (err) {
+
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: 'Failed to ping Supabase',
-        message: error.message,
-      }),
+        error: err.message
+      })
     };
+
   }
 };
